@@ -14,11 +14,17 @@ public://构造函数二;
 public:
 	void PrintData()
 	{
-		cout << "(" << m_real << "," << m_image << endl;
+		cout << "(" << m_real << "," << m_image <<")"<< endl;
 	}
 
 public://func加法;
 	Constractor Add(const Constractor& c)
+	{
+		return Constractor(m_real + c.m_real, m_image + c.m_image);
+	}
+
+public:
+	Constractor operator+(Constractor& c)
 	{
 		return Constractor(m_real + c.m_real, m_image + c.m_image);
 	}
@@ -29,5 +35,9 @@ private:
 
 int main()
 {
-	cout << "Hello World" << endl;
+	Constractor x;
+	Constractor c(1, 2);
+	Constractor c1(3, 4);
+	x = c + c1;
+	x.PrintData();
 }
