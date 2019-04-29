@@ -12,9 +12,16 @@ public://构造函数二;
 		m_image = image;
 	}
 public:
+	void PrintData()
+	{
+		cout << "(" << m_real << "," << m_image << endl;
+	}
 
-
-
+public://func加法;
+	Constractor Add(const Constractor& c)
+	{
+		return Constractor(m_real + c.m_real, m_image + c.m_image);
+	}
 private:
 	int m_real;
 	int m_image;
