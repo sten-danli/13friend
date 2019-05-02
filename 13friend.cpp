@@ -3,7 +3,6 @@
 #include <iostream>
 using namespace std;
 
-
 class Complex
 {
 private:
@@ -11,41 +10,48 @@ private:
 	int m_imag;
 
 	//声明一个友元方法，然后把方法在下方外部进行实现（见下方类外面）；
-	friend ostream& operator<<(ostream& out, Complex &c);			//为了可以执行:	cout << c1<<endl; //叫做输出流重载；
-	friend Complex operator+(const Complex& c, int i);				//为了可以执行：	c = c1+100;
-	friend Complex operator+( const int i, const Complex& c);		//为了可以执行：	c = 100 + c1;
+	friend ostream& operator<<(ostream& out, Complex &c);	//输出流重载为了可以执行:	cout<<c1<<endl; 
+	friend istream& operator>>(istream& in, Complex& c);	//输入流重载为了可以执行:	cin>>c1<<endl;
+	friend Complex operator+(const Complex& c, int i);		//为了可以执行：	c = c1+100;
+	friend Complex operator+( const int i, const Complex& c);//为了可以执行：	c = 100 + c1;
 	friend void Show(Complex& c);
+//成员函数;
+public://用成员函数方式写输出流重载,如果使用成员方式的话就要这样调动本函数：
+
+	ostream& operator<<(ostream& out)
+	{
+		out << "(" << m_real << "," << m_imag << ")" << endl;
+		return out;
+	}
 public:
 	//operator+运算符重载方式是为可以这样调动代码：c=c1+100;
 	Complex operator+(int i)		//同样功能用友元方法：friend Complex operator+(const Complex& c, int i){return Complex(c.m_real + i, c.m_imag);}
 	{
 		return Complex(m_real + i, m_imag);
 	}
-
-public://　构造函数一；
+public:
+	//　构造函数一；
 	Complex() :m_real(0), m_imag(0)
 	{}
-
-public://构造函数二；
+public:
+	//构造函数二；
 	Complex(int real, int imag)
 	{
 		m_real = real;
 		m_imag = imag;
 	}
-
 public:
 	void PrintComplex()const
 	{
 		cout << "(" << m_real << "," << m_imag << ")" << endl;
 	}
-
-public://加法func；
+public:
+	//加法func；
 	Complex Add(const Complex& c)
 	{
 		Complex cmp(m_real + c.m_real, m_imag + c.m_imag);
 		return cmp;
 	}
-
 public:
 	//operator运算符重载方式是为可以这样调动代码： c=c1+c2;
 	Complex operator+(const Complex & c)//为了保证我们的对象不更改加const；
@@ -53,12 +59,10 @@ public:
 		Complex cmp(m_real + c.m_real, m_imag + c.m_imag);
 		return cmp;
 	}
-
 public:
 	//operator运算符重载方式是为可以这样调动代码： c=c1-c2;
 	Complex operator-(const Complex & c)
-	{
-		
+	{	
 		return Complex(m_real - c.m_real, m_imag - c.m_imag);
 		//简化前的代码：
 		/* Complex cmp(m_real+c.m_real,m_imag+c.m_imag); */
@@ -68,60 +72,69 @@ public:
 		//去拷贝这个无名临时对象，我们很多时候不会把代码写成这个样子，而是直接返回这个无名临时
 		//对象，不会像先前用无名临时对象去拷贝另外一个无名临时对象， 他直接认为这里所创建的无
 		//名临时对象就是要返回的无名的临时对象，把他直接返回调用语句。
-
 	}
-
 };
-
 //友元函数实现；
+
 ostream& operator<<(ostream& out, Complex &c)//输出流重载函数实现；
 {
 	out << "(" << c.m_real << "," << c.m_imag << ")" << endl;
 	return out;
 }
-
-Complex operator+(const Complex& c, int i)
+istream& operator>>(istream& in, Complex& c)
+{
+	in >> c.m_real >> c.m_imag;
+	return in;
+}
+Complex operator+(const Complex& c, int i)// 是为可以这样调动代码：c=c1+100;
 {
 	return Complex(c.m_real + i, c.m_imag);
 }
-
-Complex operator+( const int i,  const Complex & c) // 是为可以这样调动代码：c=20+c1; 
+Complex operator+( const int i,  const Complex & c) // 是为可以这样调动代码：c=100+c1; 
 {
 	cout << "This is Friend + Funktion " << endl;
 	return Complex(c.m_real + i, c.m_imag);
 }
-
 void Show(Complex& c)
 {
 	cout << "This is Friend Show Funktion" << endl;
-	cout << "m_real= " << c.m_real<<","<< "m_image= " << c.m_imag << endl;
+	cout << "m_real= " << c.m_real << "," << "m_image= " << c.m_imag << endl;
 }
-
-
 int main()
 {
-
 	Complex c;
 	Complex c1(100, 2);
 	c = 100 + c1;
-	cout << c1<<endl;
+	cin >> c;
+	c<<cout << endl;	//使用成“员函数方”式调用输出流重载:
+	/*			ostream& operator<<(ostream& out)
+				{
+					out << "(" << m_real << "," << m_imag << ")" << endl;
+					return out;
+				}
+	*/
+	//调用函数方法:	c.operator<<(cout)
+	//语句解释如下:
+	//看似奇怪但是仔细分析是这样的，c是对象我去调动我的operator输出与算符的重载函数，把我的
+	//cout当作一个对象，经行引用来传递,
+	//所以你就看到了为什么是这样写才能够运行，他返回来的对象是out,所以通过分析你发现，这种写法
+	//就不特殊了，一般情况cout<<c输出c我们很习惯，但是像这样样c输出<<cout很不习惯，我们可以把
+	//输入输出流用成员函数写完出但是使用的时候就要用对象来进行驱动，所以一般我们不会吧输入输出
+	//流重载用成员函数方式，因为重载成成员函数就必然会导致这种奇怪方式的输出：
+	//			c<<cout << endl;
+	//所以因此我们会把输出运算符重载为友元，然第一个参数就是我们的输出对象流，这样的话我们的输出
+	//流对象cout<<c<<endl;就能过用这样的顺序语法把c输出了.
+
+	cout << c1<<endl; //调动输出流重载友元函数；
 	c.PrintComplex();
 	Show(c1);
-	
-
 	/*
-
 	Complex c;
 	Complex c1(3, 4);
 	Complex c2(1, 2);
-
-	
 	c = 20 + c1;        //调用Complex operator+(const Complex &c)函数；
-
 	c = c1 + 10;		//调用Complex operator+(int i ) {return Complex(m_real+i,m_imag);}函数；
-
 	c = c1.Add(c2);		 //调动Complex Add(Complex &c)函数；
-
 	c = c1 + c2;        //调用Complex operator+(const Complex &c)运算符重载方式，
 	//如果没有定义operator运算符重载方式的话
 	//编译器不知道如何这两个数如何去相加，因为他们是复杂对象，不象int x=10, int y=20 一类
